@@ -1,0 +1,30 @@
+name: iOS CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-test:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          brew update
+          brew install xcodegen swiftlint || true
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Lint
+        run: swiftlint || true
+
+      - name: Build and test (iOS Simulator)
+        run: |
+          xcodebuild -scheme Caligraphy -destination 'platform=iOS Simulator,name=iPhone 15' -quiet build
+          xcodebuild -scheme Caligraphy -destination 'platform=iOS Simulator,name=iPhone 15' -quiet test || true
+

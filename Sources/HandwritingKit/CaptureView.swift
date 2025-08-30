@@ -22,9 +22,9 @@ final class StrokeStore: ObservableObject {
     }
     
     // ✅ NOVO: Calcula % de conclusão e verifica se deve avaliar automaticamente
-    func updateCompletionPercentage(template: TemplateDef) {
+    func updateCompletionPercentage(template: TemplateDef, canvasSize: CGSize) {
         guard !current.isEmpty else { 
-            completionPercentage = 0.0
+            DispatchQueue.main.async { self.completionPercentage = 0.0 }
             return 
         }
         
@@ -32,14 +32,12 @@ final class StrokeStore: ObservableObject {
             stroke.path.map { $0.location }
         }
         
-        let completion = ScoringMath.completionPercentage(userPoints, template.polyline)
-        completionPercentage = completion
+        let completion = ScoringMath.completionPercentage(userPoints, template.polyline, canvasSize: canvasSize)
         
-        // ✅ AUTO-AVALIAÇÃO: Se > 95% de conclusão, avalia automaticamente
-        if completion > 0.95 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.onAutoEvaluate?()
-            }
+        // Atualiza na main e sinaliza auto-avaliação quando apropriado
+        DispatchQueue.main.async {
+            self.completionPercentage = completion
+            if completion > 0.95 { self.onAutoEvaluate?() }
         }
     }
 }
@@ -47,6 +45,7 @@ final class StrokeStore: ObservableObject {
 struct CaptureView: UIViewRepresentable {
     @ObservedObject var store: StrokeStore
     let template: TemplateDef
+    let canvasSize: CGSize
     
     func makeUIView(context: Context) -> PKCanvasView {
         let v = PKCanvasView()
@@ -69,32 +68,34 @@ struct CaptureView: UIViewRepresentable {
     }
     
     func makeCoordinator() -> Coord { 
-        Coord(store: store, template: template) 
+        Coord(store: store, template: template, canvasSize: canvasSize) 
     }
     
     final class Coord: NSObject, PKCanvasViewDelegate {
         let store: StrokeStore
         let template: TemplateDef
+        var canvasSize: CGSize
         
-        init(store: StrokeStore, template: TemplateDef) { 
+        init(store: StrokeStore, template: TemplateDef, canvasSize: CGSize) { 
             self.store = store 
             self.template = template
+            self.canvasSize = canvasSize
         }
         
         func canvasViewDrawingDidChange(_ canvasView: PKCanvasView) {
             // Sincroniza os strokes com o store
             store.current = canvasView.drawing.strokes
             
-            // ✅ NOVO: Atualiza % de conclusão sempre que o desenho muda
-            store.updateCompletionPercentage(template: template)
+            // Atualiza % de conclusão sempre que o desenho muda
+            store.updateCompletionPercentage(template: template, canvasSize: canvasSize)
         }
         
-        // ✅ NOVO: Detecta quando o pencil é levantado da tela
+        // Detecta quando o pencil é levantado da tela
         func canvasViewDidEndUsingTool(_ canvasView: PKCanvasView) {
             // Pequeno delay para garantir que o último stroke foi processado
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
                 guard let self = self else { return }
-                self.store.updateCompletionPercentage(template: self.template)
+                self.store.updateCompletionPercentage(template: self.template, canvasSize: self.canvasSize)
             }
         }
     }

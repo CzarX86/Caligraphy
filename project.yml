@@ -1,0 +1,40 @@
+name: Caligraphy
+options:
+  minimumXcodeGenVersion: 2.38.0
+settings:
+  base:
+    IPHONEOS_DEPLOYMENT_TARGET: 17.0
+    SWIFT_VERSION: 5.9
+packages: {}
+targets:
+  Caligraphy:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    resources:
+      - path: Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.julio.Caligraphy
+        INFOPLIST_FILE: Sources/Info.plist
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    postbuildScripts:
+      - name: SwiftLint
+        script: |
+          if which swiftlint >/dev/null; then swiftlint; else echo "SwiftLint not installed"; fi
+  CaligraphyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/CaligraphyTests
+    dependencies:
+      - target: Caligraphy
+    settings:
+      base:
+        TEST_HOST: ""
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
