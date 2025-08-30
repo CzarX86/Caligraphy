@@ -17,112 +17,104 @@ struct ContentView: View {
     @State private var isAutoEvaluating = false
 
     var body: some View {
-        VStack(spacing: 12) {
-            // Template selector
-            Picker("Exercício", selection: $selectedTemplateId) {
-                ForEach(DemoTemplates.all, id: \.id) { tpl in
-                    Text(tpl.id).tag(tpl.id)
-                }
-            }
-            .pickerStyle(.segmented)
-
-            // Canvas area - sem sobreposição
-            GeometryReader { geo in
-                ZStack {
-                    // Canvas principal
-                    CaptureView(store: strokeStore, template: DemoTemplates.byId(selectedTemplateId))
-                        .id(canvasKey) // recria a view quando a key muda
-                        .background(Color(white: 0.95))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
-                    
-                    // Template overlay como overlay separado
-                    TemplateOverlay(template: DemoTemplates.byId(selectedTemplateId))
-                        .allowsHitTesting(false) // Não interfere com o input
-                }
-                .onAppear { canvasSize = geo.size }
-                .onChange(of: geo.size) { _, newSize in canvasSize = newSize }
-            }
-            .frame(minHeight: 420)
-            
-            // ✅ NOVO: Indicador de % de conclusão
+        VStack(spacing: 0) {
+            // ✅ NOVO: Barra de conclusão dinâmica no topo da tela
             if strokeStore.completionPercentage > 0 {
+                CompletionProgressBar(percentage: strokeStore.completionPercentage)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .background(Color(white: 0.98))
+                    .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
+            }
+            
+            VStack(spacing: 12) {
+                // Template selector
+                Picker("Exercício", selection: $selectedTemplateId) {
+                    ForEach(DemoTemplates.all, id: \.id) { tpl in
+                        Text(tpl.id).tag(tpl.id)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                // Canvas area - sem sobreposição
+                GeometryReader { geo in
+                    ZStack {
+                        // Canvas principal
+                        CaptureView(store: strokeStore, template: DemoTemplates.byId(selectedTemplateId))
+                            .id(canvasKey) // recria a view quando a key muda
+                            .background(Color(white: 0.95))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
+                        
+                        // Template overlay como overlay separado
+                        TemplateOverlay(template: DemoTemplates.byId(selectedTemplateId))
+                            .allowsHitTesting(false) // Não interfere com o input
+                    }
+                    .onAppear { canvasSize = geo.size }
+                    .onChange(of: geo.size) { _, newSize in canvasSize = newSize }
+                }
+                .frame(minHeight: 420)
+                
                 HStack {
-                    Text("Conclusão: \(Int(strokeStore.completionPercentage * 100))%")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Button("Limpar") { 
+                        clearCanvas()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
                     
-                    ProgressView(value: strokeStore.completionPercentage)
-                        .progressViewStyle(LinearProgressViewStyle())
-                        .frame(width: 100)
+                    Spacer()
                     
-                    if strokeStore.completionPercentage > 0.95 {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                            .scaleEffect(0.8)
+                    Button("Avaliar") {
+                        evaluateDrawing()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(strokeStore.current.isEmpty)
+                    
+                    // ✅ NOVO: Indicador de avaliação automática
+                    if isAutoEvaluating {
+                        HStack(spacing: 4) {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                            Text("Avaliando...")
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                        }
                     }
                 }
                 .padding(.horizontal)
-            }
-            
-            HStack {
-                Button("Limpar") { 
-                    clearCanvas()
+                
+                // Debug info
+                if !debugInfo.isEmpty {
+                    Text(debugInfo)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
                 
-                Spacer()
-                
-                Button("Avaliar") {
-                    evaluateDrawing()
+                // Debug details
+                if !debugDetails.isEmpty {
+                    Text(debugDetails)
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                        .padding(.horizontal)
+                        .multilineTextAlignment(.leading)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(strokeStore.current.isEmpty)
                 
-                // ✅ NOVO: Indicador de avaliação automática
-                if isAutoEvaluating {
-                    HStack(spacing: 4) {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                        Text("Avaliando...")
-                            .font(.caption)
-                            .foregroundColor(.blue)
+                if let m = lastMetrics {
+                    MetricsView(m: m)
+                }
+                
+                if let rec = lastRecommendation {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Sugestões: ") + Text(rec.nextTemplateIds.joined(separator: ", ")).font(.callout)
+                        Text("Racional: ") + Text(rec.rationale).font(.callout)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
                 }
             }
-            .padding(.horizontal)
-            
-            // Debug info
-            if !debugInfo.isEmpty {
-                Text(debugInfo)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-            }
-            
-            // Debug details
-            if !debugDetails.isEmpty {
-                Text(debugDetails)
-                    .font(.caption2)
-                    .foregroundColor(.orange)
-                    .padding(.horizontal)
-                    .multilineTextAlignment(.leading)
-            }
-            
-            if let m = lastMetrics {
-                MetricsView(m: m)
-            }
-            
-            if let rec = lastRecommendation {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Sugestões: ") + Text(rec.nextTemplateIds.joined(separator: ", ")).font(.callout)
-                    Text("Racional: ") + Text(rec.rationale).font(.callout)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
-            }
+            .padding()
         }
         .padding()
         .onChange(of: selectedTemplateId) { _, newTemplateId in
@@ -143,8 +135,8 @@ struct ContentView: View {
     
     // ✅ NOVO: Configura callback para avaliação automática
     private func setupAutoEvaluation() {
-        strokeStore.onAutoEvaluate = { [weak self] in
-            self?.autoEvaluateDrawing()
+        strokeStore.onAutoEvaluate = {
+            self.autoEvaluateDrawing()
         }
     }
     
