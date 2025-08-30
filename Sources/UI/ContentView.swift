@@ -854,3 +854,10 @@ struct TutorialOverlay: View {
     }
 }
 
+#Preview {
+    ContentView()
+        .previewDevice(PreviewDevice(rawValue: "iPad (9th generation)"))
+        .previewDisplayName("iPad 9")
+        .previewLayout(.sizeThatFits)
+}
+

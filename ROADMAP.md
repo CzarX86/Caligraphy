@@ -2,8 +2,8 @@
 
 ## 📱 **VISÃO GERAL DO PROJETO**
 **Caligraphy** é um aplicativo iPad para treinamento de caligrafia usando Apple Pencil, focado em medir e melhorar:
-- **Precisão** - Aderência ao template
-- **Velocidade** - Tempo de execução
+- **Precisão** - Aderência ao template usando sistema 4-dimensional
+- **Velocidade** - Tempo de execução com métricas estatísticas
 - **Organização Espacial** - Posicionamento e proporções
 - **Fluidez** - Continuidade e suavidade dos traços
 
@@ -13,15 +13,17 @@
 
 ### **🏗️ Estrutura Base do Projeto**
 - ✅ Projeto Xcode configurado com XcodeGen
-- ✅ Estrutura modular organizada (`Sources/{App,UI,HandwritingKit,ScoringEngine,Recommender,Models}`)
-- ✅ Build e compilação funcionando
+- ✅ Estrutura modular organizada (`Sources/{App,UI,HandwritingKit,ScoringEngine,Recommender,Models,Storage,TemplateKit,Content}`)
+- ✅ Build e compilação funcionando no iPad físico
 - ✅ Scheme Xcode configurado para execução
+- ✅ Code signing configurado para desenvolvimento
 
 ### **✏️ Captura de Handwriting**
 - ✅ `CaptureView` com PencilKit integrado
 - ✅ Captura de traços do Apple Pencil
 - ✅ Processamento de `PKStroke` para `[CGPoint]`
 - ✅ Diferenciação automática entre toque de dedo e Apple Pencil
+- ✅ Detecção automática de "pencil up" para avaliação
 
 ### **🧮 Sistema de Scoring Avançado**
 - ✅ **Algoritmos Matemáticos Corrigidos**:
@@ -53,8 +55,7 @@
 - ✅ **Barra de Progresso Dinâmica**:
   - Atualização em tempo real durante o desenho
   - Código de cores (vermelho → laranja → amarelo → verde)
-  - Animação de celebração ao atingir >95%
-  - Indicador visual com partículas e efeitos
+  - Indicador visual com ProgressView
 
 - ✅ **Navegação por Templates**:
   - Botões de navegação (anterior/próximo)
@@ -79,6 +80,12 @@
   - Validação robusta para valores NaN/Infinito
   - Métricas normalizadas e ponderadas
 
+### **🔧 Configurações Técnicas**
+- ✅ **SwiftUI Live Preview** configurado para iPad 9
+- ✅ **SwiftLint** configurado (versão 0.59.1)
+- ✅ **XcodeGen** para gerenciamento de projeto
+- ✅ **Code Signing** automático configurado
+
 ---
 
 ## 🚧 **EM DESENVOLVIMENTO / PENDENTE**
@@ -89,7 +96,7 @@
 - ⚠️ Tutorial no primeiro carregamento
 
 ### **📈 Relatórios e Analytics**
-- ⚠️ Sistema de armazenamento de sessões
+- ⚠️ Sistema de armazenamento de sessões (Storage.swift é placeholder)
 - ⚠️ Histórico de performance do usuário
 - ⚠️ Gráficos de progresso ao longo do tempo
 - ⚠️ Exportação de dados
@@ -110,6 +117,7 @@
    - Tutorial interativo no primeiro uso
 
 2. **Sistema de Armazenamento**
+   - Implementar `Storage.swift` (atualmente placeholder)
    - Persistência de sessões de treino
    - Histórico de scores e métricas
    - Backup local e iCloud
@@ -170,11 +178,12 @@
 ## 🧪 **TESTES E VALIDAÇÃO**
 
 ### **✅ Testado e Funcionando**
-- ✅ Build e compilação
-- ✅ Captura de traços
+- ✅ Build e compilação no iPad físico
+- ✅ Captura de traços com Apple Pencil
 - ✅ Cálculo de métricas básicas
 - ✅ Layout responsivo
 - ✅ Navegação por gestos
+- ✅ Code signing e deploy
 
 ### **⚠️ Precisa de Testes**
 - ⚠️ Sistema de scoring em diferentes cenários
@@ -183,7 +192,7 @@
 - ⚠️ Edge cases de orientação
 
 ### **❌ Não Testado**
-- ❌ Sistema de armazenamento
+- ❌ Sistema de armazenamento (placeholder)
 - ❌ Tutorial e onboarding
 - ❌ Exportação de dados
 - ❌ Integração com sistema iOS
@@ -212,8 +221,8 @@
 ## 🚀 **PRÓXIMOS PASSOS RECOMENDADOS**
 
 1. **Implementar Tutorial**: Criar `TutorialOverlay` funcional
-2. **Testar no Simulador**: Validar todas as funcionalidades implementadas
-3. **Sistema de Storage**: Implementar persistência de dados
+2. **Sistema de Storage**: Implementar persistência de dados em `Storage.swift`
+3. **Testar no iPad**: Validar todas as funcionalidades implementadas
 4. **Refinamento de UI**: Polir animações e transições
 5. **Testes de Usabilidade**: Validar com usuários reais
 
@@ -225,20 +234,35 @@
 - O sistema de scoring foi completamente refatorado para ser mais rigoroso
 - A navegação por swipe funciona em qualquer lugar da tela sem interferir no desenho
 - O layout responsivo se adapta automaticamente às mudanças de orientação
+- O app está funcionando no iPad físico com code signing configurado
 
 ### **⚠️ Problemas Conhecidos**
-- SwiftLint mostra 257 warnings (estilo de código, não críticos)
+- SwiftLint mostra warnings de estilo (trailing whitespace, newlines)
+- `Storage.swift` é apenas placeholder
+- `TemplateKit.swift` é apenas placeholder
 - Alguns templates podem precisar de ajustes finos
-- Sistema de timestamps precisa ser implementado para velocidade precisa
 
 ### **🔧 Configurações Importantes**
 - **Target**: iOS 17.0+
-- **Dispositivo**: iPad (recomendado A16 ou superior)
+- **Dispositivo**: iPad (testado no iPad 9)
 - **Framework Principal**: SwiftUI + PencilKit
 - **Arquitetura**: MVVM com ObservableObject
+- **Total de Linhas**: 1,697 linhas de código Swift
+
+---
+
+## 📊 **ESTATÍSTICAS DO PROJETO**
+
+- **Arquivos Swift**: 20+
+- **Linhas de Código**: 1,697
+- **Módulos**: 9 (App, UI, HandwritingKit, ScoringEngine, Recommender, Models, Storage, TemplateKit, Content)
+- **Templates**: 3 implementados
+- **Testes**: 2 arquivos de teste básicos
+- **SwiftLint**: 0.59.1 configurado
 
 ---
 
 *Última atualização: 30 de Agosto, 2025*
 *Versão do projeto: 1.0.0*
-*Status: Funcional com funcionalidades core implementadas*
+*Status: Funcional no iPad físico com funcionalidades core implementadas*
+*Próximo Milestone: Sistema de Tutorial e Storage funcional*
