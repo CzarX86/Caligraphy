@@ -12,10 +12,11 @@ final class StrokeStore: ObservableObject {
     }
     
     func reset() { 
-        current = []
-        completionPercentage = 0.0
-        // Limpa diretamente o canvas na main thread para garantir atualização visual imediata
+        // ✅ CORRIGIDO: Atualiza as propriedades primeiro, depois limpa o canvas
         DispatchQueue.main.async {
+            self.current = []
+            self.completionPercentage = 0.0
+            // Limpa diretamente o canvas na main thread para garantir atualização visual imediata
             self.canvasView?.drawing = PKDrawing()
         }
     }
@@ -91,7 +92,8 @@ struct CaptureView: UIViewRepresentable {
         // ✅ NOVO: Detecta quando o pencil é levantado da tela
         func canvasViewDidEndUsingTool(_ canvasView: PKCanvasView) {
             // Pequeno delay para garantir que o último stroke foi processado
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self = self else { return }
                 self.store.updateCompletionPercentage(template: self.template)
             }
         }

@@ -24,7 +24,7 @@ struct ContentView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
                     .background(Color(white: 0.98))
-                    .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
+                    .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
             }
             
             VStack(spacing: 12) {
