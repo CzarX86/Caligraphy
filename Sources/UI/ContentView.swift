@@ -16,26 +16,39 @@ struct ContentView: View {
     @State private var canvasSize: CGSize = .zero
     @State private var isAutoEvaluating = false
     @State private var lockedCanvasHeight: CGFloat = 0
-    @State private var showTutorial = true
+    @State private var showTutorial = false
     @State private var tutorialStep = 0
 
     var body: some View {
         GeometryReader { geometry in
             let isLandscape = geometry.size.width > geometry.size.height
             
-            Group {
-                if isLandscape {
+            // Fallback simples para debug
+            if geometry.size.width == 0 || geometry.size.height == 0 {
+                Text("Carregando...")
+                    .font(.title)
+                    .foregroundColor(.blue)
+            } else {
+                Group {
+                    if isLandscape {
                     // ✅ NOVO: Layout horizontal otimizado
                     HStack(spacing: 16) {
                         // Coluna esquerda: Controles e navegação
                         VStack(spacing: 16) {
-                            // Barra de conclusão
+                            // Barra de conclusão (temporariamente simplificada)
                             if strokeStore.completionPercentage > 0 {
-                                CompletionProgressBar(percentage: strokeStore.completionPercentage)
-                                    .frame(height: 60)
-                                    .background(Color(white: 0.98))
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                                    .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
+                                VStack {
+                                    Text("Conclusão: \(Int(strokeStore.completionPercentage * 100))%")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    
+                                    ProgressView(value: strokeStore.completionPercentage)
+                                        .progressViewStyle(LinearProgressViewStyle())
+                                }
+                                .frame(height: 60)
+                                .padding()
+                                .background(Color(white: 0.98))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                             }
                             
                             // Navegação de templates
@@ -140,17 +153,17 @@ struct ContentView: View {
                                         .clipShape(RoundedRectangle(cornerRadius: 8))
                                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
                                     
-                                    // Template overlay
-                                    TemplateOverlay(template: DemoTemplates.byId(selectedTemplateId))
-                                        .allowsHitTesting(false)
+                                    // Template overlay (temporariamente simplificado)
+                                    // TemplateOverlay(template: DemoTemplates.byId(selectedTemplateId))
+                                    //     .allowsHitTesting(false)
                                     
-                                    // Tutorial overlay
-                                    if showTutorial {
-                                        TutorialOverlay(
-                                            step: tutorialStep,
-                                            onComplete: { showTutorial = false }
-                                        )
-                                    }
+                                    // Tutorial overlay (temporariamente desabilitado)
+                                    // if showTutorial {
+                                    //     TutorialOverlay(
+                                    //         step: tutorialStep,
+                                    //         onComplete: { showTutorial = false }
+                                    //     )
+                                    // }
                                 }
                                 .onAppear {
                                     if lockedCanvasHeight == 0 {
@@ -187,13 +200,19 @@ struct ContentView: View {
                 } else {
                     // ✅ NOVO: Layout vertical otimizado
                     VStack(spacing: 0) {
-                        // Barra de conclusão
+                        // Barra de conclusão (temporariamente simplificada)
                         if strokeStore.completionPercentage > 0 {
-                            CompletionProgressBar(percentage: strokeStore.completionPercentage)
-                                .padding(.horizontal)
-                                .padding(.top, 8)
-                                .background(Color(white: 0.98))
-                                .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
+                            VStack {
+                                Text("Conclusão: \(Int(strokeStore.completionPercentage * 100))%")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                
+                                ProgressView(value: strokeStore.completionPercentage)
+                                    .progressViewStyle(LinearProgressViewStyle())
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            .background(Color(white: 0.98))
                         }
                         
                         VStack(spacing: 12) {
@@ -243,15 +262,17 @@ struct ContentView: View {
                                         .clipShape(RoundedRectangle(cornerRadius: 8))
                                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(.secondary))
                                     
-                                    TemplateOverlay(template: DemoTemplates.byId(selectedTemplateId))
-                                        .allowsHitTesting(false)
+                                    // Template overlay (temporariamente simplificado)
+                                    // TemplateOverlay(template: DemoTemplates.byId(selectedTemplateId))
+                                    //     .allowsHitTesting(false)
                                     
-                                    if showTutorial {
-                                        TutorialOverlay(
-                                            step: tutorialStep,
-                                            onComplete: { showTutorial = false }
-                                        )
-                                    }
+                                    // Tutorial overlay (temporariamente desabilitado)
+                                    // if showTutorial {
+                                    //     TutorialOverlay(
+                                    //         step: tutorialStep,
+                                    //         onComplete: { showTutorial = false }
+                                    //     )
+                                    // }
                                 }
                                 .onAppear {
                                     if lockedCanvasHeight == 0 {
@@ -344,6 +365,7 @@ struct ContentView: View {
                         .padding()
                     }
                 }
+            }
             }
         }
         
